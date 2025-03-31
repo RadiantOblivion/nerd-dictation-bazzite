@@ -25,6 +25,7 @@ For Bazzite users:
 
    git clone https://github.com/ideasman42/nerd-dictation.git
    cd nerd-dictation
+   chmod +x install-bazzite
    ./install-bazzite
 
 Usage
