@@ -1,5 +1,5 @@
 ##############
-Nerd Dictation
+Nerd Dictation for Bazzite
 ##############
 
 *Offline Speech to Text for Desktop Linux.* - See `demo video <https://www.youtube.com/watch?v=T7sR-4DFhpQ>`__.
@@ -23,8 +23,8 @@ For Bazzite users:
 
 .. code-block:: sh
 
-   git clone https://github.com/ideasman42/nerd-dictation.git
-   cd nerd-dictation
+   git clone https://github.com/RadiantOblivion/nerd-dictation-bazzite.git
+   cd nerd-dictation-bazzite
    chmod +x install-bazzite
    ./install-bazzite
 
