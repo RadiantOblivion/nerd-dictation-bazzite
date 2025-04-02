@@ -9,29 +9,18 @@ import zipfile
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # Define paths
-NERD_DICTATION_REPO = Path.home() / "nerd-dictation"
-NERD_DICTATION = NERD_DICTATION_REPO / "nerd-dictation"
-PIPX_DICTATION = NERD_DICTATION_REPO / "pipx-nerd-dictation"
 BIN_NERD_DICTATION = Path.home() / ".local" / "bin" / "nerd-dictation"
 BIN_PIPX_NERD_DICTATION = Path.home() / ".local" / "bin" / "pipx-nerd-dictation"
 NERD_DICTATION_CONFIG = Path.home() / ".config" / "nerd-dictation" / "model"
 VOSK_MODEL_URL = "https://alphacephei.com/kaldi/models/vosk-model-small-en-us-0.15.zip"
 
-# Clone nerd-dictation repository if not present
-if not NERD_DICTATION_REPO.exists():
-    subprocess.run(["git", "clone", "https://github.com/ideasman42/nerd-dictation.git"], check=True)
-
-# Ensure pipx-nerd-dictation exists
-if not PIPX_DICTATION.exists():
-    sys.exit(f"Error: {PIPX_DICTATION} does not exist.")
-
 # Copy pipx-nerd-dictation
 BIN_PIPX_NERD_DICTATION.parent.mkdir(parents=True, exist_ok=True)
-shutil.copy(PIPX_DICTATION, BIN_PIPX_NERD_DICTATION)
+shutil.copy("pipx-nerd-dictation", BIN_PIPX_NERD_DICTATION)
 
 # Copy nerd-dictation
 BIN_NERD_DICTATION.parent.mkdir(parents=True, exist_ok=True)
-shutil.copy(NERD_DICTATION, BIN_NERD_DICTATION)
+shutil.copy("nerd-dictation", BIN_NERD_DICTATION)
 
 # Make nerd-dictation executable
 os.chmod(BIN_NERD_DICTATION, 0o755)
