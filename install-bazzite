@@ -8,10 +8,22 @@ import zipfile
 
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+# Check for required commands
+def check_command(command):
+    try:
+        subprocess.run(["which", command], check=True, capture_output=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+# Check for brew
+if not check_command("brew"):
+    print("Error: 'brew' command not found. Please install Homebrew first.")
+    sys.exit(1)
+
 # Define paths
 BIN_NERD_DICTATION = Path.home() / ".local" / "bin" / "nerd-dictation"
 BIN_PIPX_NERD_DICTATION = Path.home() / ".local" / "bin" / "pipx-nerd-dictation"
-NERD_DICTATION_CONFIG = Path.home() / ".config" / "nerd-dictation" / "model"
 VOSK_MODEL_URL = "https://alphacephei.com/kaldi/models/vosk-model-small-en-us-0.15.zip"
 
 # Copy pipx-nerd-dictation
@@ -26,23 +38,63 @@ shutil.copy("nerd-dictation", BIN_NERD_DICTATION)
 os.chmod(BIN_NERD_DICTATION, 0o755)
 os.chmod(BIN_PIPX_NERD_DICTATION, 0o755)
 
-# Install pipx and vosk
-subprocess.run(["brew", "install", "pipx"], check=True)
-subprocess.run(["pipx", "install", "vosk"], check=True)
+# Check if pipx is installed
+try:
+    subprocess.run(["pipx", "--version"], check=True, capture_output=True)
+    print("pipx is already installed.")
+except (subprocess.CalledProcessError, FileNotFoundError):
+    print("Installing pipx...")
+    subprocess.run(["brew", "install", "pipx"], check=True)
 
-# Download and extract VOSK model
-subprocess.run(["wget", VOSK_MODEL_URL, "-P", str(NERD_DICTATION_CONFIG.parent)], check=True)
-with zipfile.ZipFile(NERD_DICTATION_CONFIG.parent / VOSK_MODEL_URL.split('/')[-1], 'r') as zip_ref:
-    zip_ref.extractall(NERD_DICTATION_CONFIG.parent)
+# Check if vosk is installed via pipx
+try:
+    subprocess.run(["pipx", "list"], check=True, capture_output=True, text=True)
+    if "vosk" not in subprocess.run(["pipx", "list"], check=True, capture_output=True, text=True).stdout:
+        print("Installing vosk...")
+        subprocess.run(["pipx", "install", "vosk"], check=True)
+    else:
+        print("vosk is already installed.")
+except subprocess.CalledProcessError:
+    print("Installing vosk...")
+    subprocess.run(["pipx", "install", "vosk"], check=True)
 
-# Move extracted model to config directory
-extracted_model = NERD_DICTATION_CONFIG.parent / "vosk-model-small-en-us-0.15"
-NERD_DICTATION_CONFIG.parent.mkdir(parents=True, exist_ok=True)
-shutil.copytree(str(extracted_model), str(NERD_DICTATION_CONFIG), dirs_exist_ok=True)
+# Define config directory
+config_dir = Path.home() / ".config" / "nerd-dictation"
+config_dir.mkdir(parents=True, exist_ok=True)
 
-# Clean up downloaded zip and extracted model directory
-os.remove(NERD_DICTATION_CONFIG.parent / VOSK_MODEL_URL.split('/')[-1])
-shutil.rmtree(extracted_model)
+# Check if VOSK model is already installed
+model_dir = config_dir / "model"
+if not model_dir.exists():
+    print("Installing VOSK model...")
+    # Download and extract VOSK model
+    subprocess.run(["wget", VOSK_MODEL_URL, "-P", str(config_dir)], check=True)
+    
+    model_zip = config_dir / VOSK_MODEL_URL.split('/')[-1]
+    extracted_model = config_dir / "vosk-model-small-en-us-0.15"
+    
+    # Extract model
+    with zipfile.ZipFile(model_zip, 'r') as zip_ref:
+        zip_ref.extractall(config_dir)
+    
+    # Move to final location
+    shutil.copytree(str(extracted_model), str(model_dir), dirs_exist_ok=True)
+    
+    # Cleanup temporary files
+    os.remove(model_zip)
+    shutil.rmtree(extracted_model)
+    print("VOSK model installed successfully.")
+else:
+    print("VOSK model already installed.")
+
+print("Installing grammar configuration...")
+shutil.copy("./examples/language_tool_auto_grammar/nerd-dictation.py", config_dir)
+
+# Install sound files
+print("Installing sound files...")
+sounds_dir = config_dir / "sounds"
+sounds_dir.mkdir(parents=True, exist_ok=True)
+shutil.copy("./sounds/sound-begin.mp3", sounds_dir)
+shutil.copy("./sounds/sound-end.mp3", sounds_dir)
 
 print("Setup completed successfully.")
 

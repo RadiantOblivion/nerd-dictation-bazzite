@@ -6,6 +6,8 @@ from pathlib import Path
 
 # Define state file path
 STATE_FILE = Path.home() / ".nerd-dictation-state"
+SOUND_BEGIN = Path.home() / ".config" / "nerd-dictation" / "sounds" / "sound-begin.mp3"
+SOUND_END = Path.home() / ".config" / "nerd-dictation" / "sounds" / "sound-end.mp3"
 
 def activate_vosk():
     """Activate the vosk environment from pipx."""
@@ -42,19 +44,28 @@ def write_state(value):
     """Write the new state to the state file."""
     STATE_FILE.write_text(str(value))
 
-def run_nerd_dictation(command):
-    """Run nerd-dictation with the specified command."""
+def run_nerd_dictation(args):
+    """Run nerd-dictation with the specified arguments."""
     nerd_dictation_path = Path.home() / ".local" / "bin" / "nerd-dictation"
     if not nerd_dictation_path.exists():
         print(f"Error: nerd-dictation not found at {nerd_dictation_path}")
         sys.exit(1)
     
     try:
-        subprocess.run([str(nerd_dictation_path), command], check=True)
+        subprocess.run([str(nerd_dictation_path)] + args, check=True)
         return True
     except subprocess.CalledProcessError as e:
         print(f"Error running nerd-dictation: {e}")
         return False
+
+def play_sound(sound_file):
+    """Play a sound file using paplay."""
+    try:
+        subprocess.run(['paplay', str(sound_file)], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error playing sound: {e}")
+    except FileNotFoundError:
+        print("Error: paplay not found. Please install pulseaudio-utils to enable sound playback.")
 
 def main():
     # Activate vosk environment
@@ -63,18 +74,20 @@ def main():
     # Read current state
     state = read_state()
     
-    if state > 0:
+    if state == 0:
+        write_state(1)
+        play_sound(SOUND_BEGIN)
+        run_nerd_dictation(["begin", "--full-sentence", "--numbers-as-digits", "--numbers-use-separator", "--numbers-min-value", "10", "--numbers-no-suffix"])
+    
+    else:
         # Reset state to 0 immediately
         write_state(0)
         # Stop the program if it's running
-        run_nerd_dictation("end")
+        run_nerd_dictation(["end"])
+        # Play end sound
+        play_sound(SOUND_END)
         sys.exit(0)
-    
-    # Increase state and start the program
-    write_state(state + 1)
-    if not run_nerd_dictation("begin"):
-        write_state(state)  # Revert state if start failed
-        sys.exit(1)
+
 
 if __name__ == "__main__":
     main() 

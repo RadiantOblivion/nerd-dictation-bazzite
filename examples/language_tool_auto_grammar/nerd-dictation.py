@@ -33,7 +33,6 @@
 
 import re
 import requests
-from pprint import pprint
 
 PUNCTUATION = {
     "comma": ",",
@@ -47,11 +46,9 @@ language = "en-US"
 
 
 def nerd_dictation_process(text):
-    print("\n\n<<<< " + text)
-
     # Fix up punctuation first because the grammar parser works better:
     for match, replacement in PUNCTUATION.items():
-        text = re.sub("\s*" + match + "(\s+|$)", lambda x: replacement + x.group(1), text)
+        text = re.sub(r"\s*" + match + r"(\s+|$)", lambda x: replacement + x.group(1), text)
 
     # Iterate langtool while it finds additional changes (or 3 tries):
     tries = 3
@@ -63,8 +60,6 @@ def nerd_dictation_process(text):
             text = new_text
 
         tries -= 1
-
-    print(">>>> " + new_text)
 
     return new_text
 
@@ -96,10 +91,9 @@ def langtool(text, language):
         o = m["offset"] + adj
         n = m["length"]
 
-        print("  Rule: " + m["rule"]["id"])
         if m["rule"]["id"] in ["TOO_LONG_SENTENCE"]:
             # Skip rules from Language Tool that you don't want:
-            print("============== langtool skipping ID: " + m["rule"]["id"])
+            continue
 
         elif len(m["replacements"]) >= 1:
             # Try the first replacement
@@ -112,11 +106,8 @@ def langtool(text, language):
 
         else:
             # If we get here this is probably an unhandled case:
-            print("\n\n======== langtool no replacement? " + text)
-
-            # Limit the "replacements" list to prevent huge debug:
-            m["replacements"] = m["replacements"][0:3]
-            pprint(m)
+            # No action needed, just continue processing
+            pass
 
         new_len = len(text)
 
