@@ -1,0 +1,28 @@
+[package]
+name = "nerd-dictation"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "A speech-to-text utility for Linux using VOSK-API"
+license = "GPL-2.0-or-later"
+
+[[bin]]
+name = "nerd-dictation"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+vosk = "0.1"
+nix = "0.27"
+tempfile = "3.8"
+log = "0.4"
+env_logger = "0.10"
+anyhow = "1.0"
+thiserror = "1.0"
+cpal = "0.15"
+ringbuf = "0.3"
+sample = "0.10"
+ctrlc = "3.4"
+dirs = "5.0"
+mpv = "0.3" 
