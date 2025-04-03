@@ -51,21 +51,11 @@ Numbers as Digits
 
    So ``Two four six eight`` becomes ``2,468``.
 
-Time Out
-   Optionally end speech to text early when no speech is detected for a given number of seconds.
-   (without an explicit call to ``end`` which is otherwise required).
-
 Output Type
-   Output can simulate keystroke events (default) or simply print to the standard output.
+   Output can simulate keystroke events or simply print to the standard output (default).
 
 User Configuration Script
    User configuration is just a Python script which can be used to manipulate text using Python's full feature set.
-
-Suspend/Resume
-   Initial load time can be an issue for users on slower systems or with some of the larger language-models,
-   in this case suspend/resume can be useful.
-   While suspended all data is kept in memory and the process is stopped.
-   Audio recording is stopped and restarted on resume.
 
 Configuration
 =============
@@ -77,6 +67,8 @@ This is an example of a trivial configuration file which simply makes the input 
    # ~/.config/nerd-dictation/nerd-dictation.py
    def nerd_dictation_process(text):
        return text.upper()
+
+More examples can be found in the `examples <https://github.com/RadiantOblivion/nerd-dictation-bazzite/tree/main/examples>`__ directory.
 
 Paths
 =====
